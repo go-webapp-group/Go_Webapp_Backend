@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"webapp/model"
 	"testing"
+	"webapp/model"
 )
 
 type MockDb struct {
