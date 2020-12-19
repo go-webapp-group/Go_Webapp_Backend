@@ -13,12 +13,13 @@ import (
 	"webapp/model"
 )
 
+//App define a app
 type App struct {
 	d        db.DB
 	handlers map[string]http.HandlerFunc
 }
 
-////////////////////////////////////////////////////////////
+//Serve start the webapp server
 func (a *App) Serve() error {
 	for path, handler := range a.handlers {
 		http.Handle(path, handler)
@@ -43,8 +44,7 @@ func disableCors(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-
+// NewApp init the webapp routes
 func NewApp(d db.DB, cors bool) App {
 	app := App{
 		d:        d,
@@ -79,8 +79,8 @@ func NewApp(d db.DB, cors bool) App {
 	return app
 }
 
+//recieveImage recieve a image from post body
 func recieveImage(w http.ResponseWriter, r *http.Request) {
-
 	f, h, err := r.FormFile("image")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -105,6 +105,7 @@ func recieveImage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetCommodities if r.Method is GET it will get all commodities, if r.Method is POST will add or update a commodity
 func (a *App) GetCommodities(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Println("get all commodities")
@@ -137,11 +138,12 @@ func (a *App) GetCommodities(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetCommodity define all the api in the form as /commodities/
 func (a *App) GetCommodity(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	urlStr := r.URL.String()
-	println(urlStr) ///////////////
+	println(urlStr)
 	fmt.Println("get a commodity")
 	commodityname := urlStr[len("/commodities")+1:]
 	if isComment(commodityname) {
@@ -160,6 +162,7 @@ func (a *App) GetCommodity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// OperateCommentsForCM get post patch delete the coments of a commodity
 func (a *App) OperateCommentsForCM(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")
@@ -215,6 +218,7 @@ func (a *App) OperateCommentsForCM(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//isComment return true if name is a comment or false is not a comment
 func isComment(name string) bool {
 	commentMode := regexp.MustCompile(`[A-Za-z0-9]+/comments`)
 	return commentMode.MatchString(name)
@@ -223,7 +227,7 @@ func isComment(name string) bool {
 
 ///////////////////zjy
 
-// GetUsersInfo ...
+// GetUsersInfo get all usersinfo
 func (a *App) GetUsersInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	user, err := a.d.GetUsersInfo()
@@ -243,7 +247,7 @@ func isGetCart(urlStr string) bool {
 
 }
 
-// GetAUserInfo ...
+// GetAUserInfo get a userinfo
 func (a *App) GetAUserInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	// fmt.Println("url", r.URL.String())
@@ -266,6 +270,7 @@ func (a *App) GetAUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetAUserCart if r.Method is GET it will get the cartInfo of a user or update the cartInfo if the r.Method is POST
 func (a *App) GetAUserCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")
@@ -304,7 +309,7 @@ func (a *App) GetAUserCart(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UserRegister ...
+// UserRegister register
 func (a *App) UserRegister(w http.ResponseWriter, r *http.Request) {
 	username := r.PostFormValue("username")
 	password := r.PostFormValue("password")
