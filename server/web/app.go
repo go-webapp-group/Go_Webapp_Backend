@@ -18,7 +18,6 @@ type App struct {
 	handlers map[string]http.HandlerFunc
 }
 
-////////////////////////////////////////////////////////////
 func (a *App) Serve() error {
 	for path, handler := range a.handlers {
 		http.Handle(path, handler)
@@ -75,8 +74,39 @@ func NewApp(d db.DB, cors bool) App {
 	app.handlers["/users"] = getUsersInfo
 	app.handlers["/users/"] = getAUserInfo
 	app.handlers["/user/register"] = userRegister
-
+	app.handlers["/"] = writeApiRoot
 	return app
+}
+
+func writeApiRoot(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	type Url struct {
+		urlName  string
+		urlValue string
+	}
+	type UForm struct {
+		URLFORM []Url `json:"urlform"`
+	}
+	apiStr := make(map[string]string)
+	apiStr["all_commodities_url"] = "http://localhost:8080/commodities"
+	apiStr["post_commoditie_url:http"] = "//localhost:8080/commodities"
+	apiStr["get_commoditie_info_url"] = "http://localhost:8080/commodities/{commodity}"
+	apiStr["get_comment_url"] = "http://localhost:8080/commodities/{commodity}/comments"
+	apiStr["post_comment_url"] = "http://localhost:8080/commodities"
+	apiStr["delete_comment_url"] = "http://localhost:8080/commodities"
+	apiStr["get_alluser_url"] = "http://localhost:8080/users"
+	apiStr["user_register_url"] = "http://localhost:8080/users/register"
+	apiStr["get_a_user_url"] = "http://localhost:8080/users/{user}"
+	apiStr["get_user_cart"] = "http://localhost:8080/users/{user}/cart"
+	apiStr["update_comment_url"] = "http://localhost:8080/users/{user}/cart"
+	apiStr["get_picture"] = "http://localhost:8080/picture/{picture}"
+	apiStr["post_picture"] = "http://localhost:8080/picture/upload"
+
+	err := json.NewEncoder(w).Encode(apiStr)
+	if err != nil {
+		sendErr(w, http.StatusInternalServerError, err.Error())
+	}
 }
 
 func recieveImage(w http.ResponseWriter, r *http.Request) {

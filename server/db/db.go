@@ -11,41 +11,44 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-///////////////////////////////////////////////////
+var database = "webapp"
+var commodityCollection = "commodity"
+var commentCollection = "comment"
+var userCollection = "user"
+var cartCollection = "cart"
+
+//对数据库的操作接口
 type DB interface {
+	//get获取所有商品|post:上传商品
 	GetAllCommodity() ([]*model.Commodity, error)
+	//
 	GetOneCommodity(name string) (*model.Commodity, error)
 	GetCommentsForCM(com string) ([]*model.Comment, error)
 	WriteComment(comment *model.Comment)
 	DeleteComment(comment *model.Comment)
 	UpdateComment(comment *model.Comment)
-	/////////////
 	GetUsersInfo() ([]*model.User, error)
 	GetAUserInfo(string) ([]*model.User, error)
 	UserRegister(string, string, float64) (*model.User, error)
-
-	//
 	GetCart(username string) (*model.Cart, error)
 	WriteCart(cart *model.Cart)
 	PostCommodity(commodity *model.Commodity)
 }
 
 type MongoDB struct {
-	//collection *mongo.Collection
 	database *mongo.Database
 }
 
 func NewMongo(client *mongo.Client) MongoDB {
 	//tech := client.Database("tech").Collection("tech")
-	webapp := client.Database("webapp")
+	webapp := client.Database(database)
 	return MongoDB{database: webapp}
 }
 
-///////////////////////////////////////////////////////////////
-
+//GetAllCommodity: get获取所有商品|post:上传商品
 func (m MongoDB) GetAllCommodity() ([]*model.Commodity, error) {
-	//res, err := m.collection.Find(context.TODO(), bson.M{})
-	res, err := m.database.Collection("commodity").Find(context.TODO(), bson.M{})
+	//获取商品表中所有的数据
+	res, err := m.database.Collection(commodityCollection).Find(context.TODO(), bson.M{})
 	if err != nil {
 		log.Println("Error while fetching commodities:", err.Error())
 		return nil, err
@@ -66,7 +69,7 @@ func (m MongoDB) GetAllCommodity() ([]*model.Commodity, error) {
 func (m MongoDB) GetOneCommodity(comName string) (*model.Commodity, error) {
 
 	var commod model.Commodity
-	err := m.database.Collection("commodity").FindOne(context.Background(), bson.M{"name": comName}).Decode(&commod)
+	err := m.database.Collection(commodityCollection).FindOne(context.Background(), bson.M{"name": comName}).Decode(&commod)
 	if err != nil {
 		log.Println("Errorn while fetching a commodity: ", err.Error())
 		return nil, err
@@ -75,7 +78,7 @@ func (m MongoDB) GetOneCommodity(comName string) (*model.Commodity, error) {
 }
 
 func (m MongoDB) WriteComment(comment *model.Comment) {
-	insertComent, err := m.database.Collection("comment").InsertOne(context.Background(), *comment)
+	insertComent, err := m.database.Collection(commentCollection).InsertOne(context.Background(), *comment)
 	if err != nil {
 		fmt.Println("Fail to insert a comment")
 	}
@@ -83,7 +86,7 @@ func (m MongoDB) WriteComment(comment *model.Comment) {
 }
 
 func (m MongoDB) DeleteComment(comment *model.Comment) {
-	deleComment, err := m.database.Collection("comment").DeleteOne(context.Background(), bson.M{"username": comment.Username, "commodity": comment.Commodity, "comment": comment.Comment})
+	deleComment, err := m.database.Collection(commentCollection).DeleteOne(context.Background(), bson.M{"username": comment.Username, "commodity": comment.Commodity, "comment": comment.Comment})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,7 +106,7 @@ func (m MongoDB) UpdateComment(comment *model.Comment) {
 
 //查询相应商品的评论
 func (m MongoDB) GetCommentsForCM(commodity string) ([]*model.Comment, error) {
-	res, err := m.database.Collection("comment").Find(context.TODO(), bson.M{"commodity": commodity})
+	res, err := m.database.Collection(commentCollection).Find(context.TODO(), bson.M{"commodity": commodity})
 
 	if err != nil {
 		log.Println("Error while fetching comments:", err.Error())
@@ -126,7 +129,7 @@ func (m MongoDB) GetCommentsForCM(commodity string) ([]*model.Comment, error) {
 
 // GetUsersInfo get usersinfo
 func (m MongoDB) GetUsersInfo() ([]*model.User, error) {
-	res, err := m.database.Collection("user").Find(context.TODO(), bson.M{})
+	res, err := m.database.Collection(userCollection).Find(context.TODO(), bson.M{})
 	if err != nil {
 		log.Println("Error while fetching all users:", err.Error())
 		return nil, err
@@ -143,7 +146,7 @@ func (m MongoDB) GetUsersInfo() ([]*model.User, error) {
 
 ////GetAUserInfo get a userinfo
 func (m MongoDB) GetAUserInfo(username string) ([]*model.User, error) {
-	res, err := m.database.Collection("user").Find(context.TODO(), bson.M{"username": username})
+	res, err := m.database.Collection(userCollection).Find(context.TODO(), bson.M{"username": username})
 	if err != nil {
 		log.Println("Error while fetching a user:", err.Error())
 		return nil, err
@@ -160,7 +163,7 @@ func (m MongoDB) GetAUserInfo(username string) ([]*model.User, error) {
 
 //UserRegister insert a userInfo to database
 func (m MongoDB) UserRegister(un string, pw string, bl float64) (*model.User, error) {
-	_, err := m.database.Collection("user").InsertOne(context.Background(), bson.M{"username": un, "password": pw, "balance": bl})
+	_, err := m.database.Collection(userCollection).InsertOne(context.Background(), bson.M{"username": un, "password": pw, "balance": bl})
 	var user model.User
 	if err != nil {
 		log.Println("Error while insert to user:", err.Error())
@@ -178,7 +181,7 @@ func (m MongoDB) UserRegister(un string, pw string, bl float64) (*model.User, er
 
 func (m MongoDB) GetCart(username string) (*model.Cart, error) {
 	var cart model.Cart
-	err := m.database.Collection("cart").FindOne(context.Background(), bson.M{"username": username}).Decode(&cart)
+	err := m.database.Collection(cartCollection).FindOne(context.Background(), bson.M{"username": username}).Decode(&cart)
 	if err != nil {
 		log.Println("Errorn while fetching a cart: ", err.Error())
 		return nil, err
@@ -193,7 +196,7 @@ func (m MongoDB) WriteCart(cart *model.Cart) {
 	//data := bson.M{"$set": bson.M{"comment": comment.Comment}}
 	data := bson.M{"$set": cart}
 
-	updateResult, err := m.database.Collection("cart").UpdateOne(context.Background(), selector, data, updateOpts)
+	updateResult, err := m.database.Collection(cartCollection).UpdateOne(context.Background(), selector, data, updateOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -209,7 +212,7 @@ func (m MongoDB) PostCommodity(commodity *model.Commodity) {
 	//data := bson.M{"$set": bson.M{"comment": comment.Comment}}
 	data := bson.M{"$set": commodity}
 
-	updateResult, err := m.database.Collection("commodity").UpdateOne(context.Background(), selector, data, updateOpts)
+	updateResult, err := m.database.Collection(commodityCollection).UpdateOne(context.Background(), selector, data, updateOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
