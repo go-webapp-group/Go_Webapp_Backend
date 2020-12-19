@@ -313,8 +313,30 @@ func (a *App) GetAUserCart(w http.ResponseWriter, r *http.Request) {
 func (a *App) UserRegister(w http.ResponseWriter, r *http.Request) {
 	username := r.PostFormValue("username")
 	password := r.PostFormValue("password")
-	balance := 0.0
-	//balance, err := strconv.ParseFloat((r.PostFormValue("balance")), 64)
+	balance1 := r.PostFormValue("balance")
+
+	f := 0.0
+	isdot := false
+	j := 0.0
+	index := 0
+	for i := 0; i < len(balance1); i++ {
+		if balance1[i] == 46 {
+			isdot = true
+			index++
+			continue
+		}
+		if isdot {
+			j = float64(balance1[i] - 48)
+			for k := 0; k < index; k++ {
+				j = j / 10.0
+			}
+			f = f + j
+			index++
+		} else {
+			f = f*10 + float64(balance1[i]-48)
+		}
+	}
+	balance := f
 
 	user, err := a.d.UserRegister(username, password, balance)
 	if err != nil {
