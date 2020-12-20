@@ -23,11 +23,11 @@ func main() {
 
 	// CORS is enabled only in prod profile
 	cors := os.Getenv("profile") == "prod"
-
+	//设置路由
 	app1 := web.NewApp(mongoDB, cors) //////
 	//appcomment := web.NewCommentApp(mongoDB, cors)
 
-	//err = appcomment.Serve()
+	//建立服务器
 	err = app1.Serve()
 
 	log.Println("Error", err)
