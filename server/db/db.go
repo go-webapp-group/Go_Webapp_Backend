@@ -174,17 +174,21 @@ func (m MongoDB) GetAUserInfo(username string) ([]*model.User, error) {
 
 //UserRegister insert a userInfo to database
 func (m MongoDB) UserRegister(un string, pw string, bl float64) (*model.User, error) {
-	_, err := m.database.Collection(userCollection).InsertOne(context.Background(), bson.M{"username": un, "password": pw, "balance": bl})
 	var user model.User
-	if err != nil {
-		log.Println("Error while insert to user:", err.Error())
-		return nil, err
-	}
 
 	user.Username = un
 	user.Password = pw
 	user.Balance = bl
 
+	selector := bson.M{"username": un}
+	updateOpts := options.Update().SetUpsert(true)
+	data := bson.M{"$set": user}
+
+	updateResult, err := m.database.Collection(cartCollection).UpdateOne(context.Background(), selector, data, updateOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Updateresult: ", updateResult)
 	return &user, nil
 }
 
