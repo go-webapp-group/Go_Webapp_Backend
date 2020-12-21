@@ -54,9 +54,11 @@
          -get 用户详细信息
        
 	    /users/register 
-          -post（model.user) : 注册
+          -post（model.user) : 注册，使用用户名和密码生成一个token返回给前端
+	  
 
         /users/{user}/cart
+	  -在访问该路径时，需要先进行token验证：
           -get 用户的购物车
           -post （model.cart)  更新购物车
              
