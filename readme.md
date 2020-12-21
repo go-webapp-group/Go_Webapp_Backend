@@ -27,7 +27,8 @@
 
 ## 资源模型：
 
-![](assets_model.png)
+
+![资源模型](./assets_model.png)
 
 
 ## API
