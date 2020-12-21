@@ -2,10 +2,11 @@ package model
 
 // Commodity define a commodity
 type Commodity struct {
-	Name         string  `json:"name"`
-	Introduction string  `json:"introduction"`
-	Picture      string  `json:"picture"`
-	Price        float64 `json:"price"`
+	Id 			 string `json:"itemId"`
+	Name         string  `json:"itemName"`
+	Introduction string  `json:"itemDetails"`
+	Picture      string  `json:itemImage"`
+	Price        float64 `json:"itemPrice"`
 }
 
 // Cart define a shopping cart
